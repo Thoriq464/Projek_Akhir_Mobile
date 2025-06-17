@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/splash_screen.dart';
 import 'screens/daftar_kosakata_screen.dart';
 import 'screens/chatbot_screen.dart';
 
@@ -62,10 +63,10 @@ class MyApp extends StatelessWidget {
           seedColor: const Color(0xFF1565C0),
           brightness: Brightness.light,
         ),
-      ),
-      initialRoute: '/',
+      ),      initialRoute: '/',
       routes: {
-        '/': (context) => const DaftarKosakataScreen(),
+        '/': (context) => const SplashScreen(),
+        '/home': (context) => const DaftarKosakataScreen(),
         '/chatbot': (context) => const ChatbotScreen(),
       },
       debugShowCheckedModeBanner: false,
