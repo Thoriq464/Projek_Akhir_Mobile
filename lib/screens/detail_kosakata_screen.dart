@@ -203,27 +203,8 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
-          ),
-          
+          ),          
           // Word type badge jika ada
-          if (widget.kosakata.jenisKata != null && widget.kosakata.jenisKata!.isNotEmpty)
-            Container(
-              margin: const EdgeInsets.only(top: 16),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.3)),
-              ),
-              child: Text(
-                widget.kosakata.jenisKata!,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
         ],
       ),
     );

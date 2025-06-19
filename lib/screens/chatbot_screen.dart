@@ -391,7 +391,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       _scrollToBottom();
 
       try {
-        String response = await _apiService.kirimPesanKeDialogflowCX(message);
+        String response = await _apiService.kirimPesanKeBackend(message); 
         setState(() {
           _isTyping = false;
           _messages.add(ChatMessage(

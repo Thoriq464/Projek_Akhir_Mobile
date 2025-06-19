@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/kosakata_tile.dart';
+// import '../widgets/kosakata_tile.dart';
 import 'detail_kosakata_screen.dart';
 import '../models/kosakata.dart';
 import '../services/api_service.dart';
@@ -297,7 +297,7 @@ class _DaftarKosakataScreenState extends State<DaftarKosakataScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Kamus Jawa',
+                                    'JavDict',
                                     style: TextStyle(
                                       fontSize: 28,
                                       fontWeight: FontWeight.bold,
@@ -306,7 +306,7 @@ class _DaftarKosakataScreenState extends State<DaftarKosakataScreen> {
                                     ),
                                   ),
                                   Text(
-                                    'Temukan arti kata-kata Jawa',
+                                    'Temukan arti kata-kata Jowo',
                                     style: TextStyle(
                                       fontSize: 16,
                                       color: Colors.white70,
