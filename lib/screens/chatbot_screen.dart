@@ -20,24 +20,40 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   final SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
   bool _isListening = false;
-  String _lastWords = '';
-  @override
+  String _lastWords = '';  @override
   void initState() {
     super.initState();
     _initSpeech();
     // Add welcome message
     _messages.add(ChatMessage(
-      text: 'Halo! Saya asisten kamus bahasa Jawa. Apa yang ingin Anda tanyakan tentang bahasa Jawa hari ini?',
+      text: '''Halo! Saya chatbot kamus bahasa Jawa. Apa yang ingin Anda tanyakan tentang bahasa Jawa hari ini?
+
+Contoh pertanyaan:
+• Kosakata Jawa: "apa arti dari seneng?"
+• Kosakata Indonesia: "bahasa jawa dari bahagia apa?"
+• Kalimat Jawa: "apa bahasa indonesianya aku tresno kowe?"
+• Kalimat Indonesia: "coba artikan saya mencintai kamu ke bahasa jawa"''',
       isMe: false,
     ));
-  }
-  /// Initialize speech to text
+  }  /// Initialize speech to text
   void _initSpeech() async {
     try {
       // Initialize speech to text without permission handler first
       _speechEnabled = await _speechToText.initialize(
-        onStatus: (val) => print('onStatus: $val'),
-        onError: (val) => print('onError: $val'),
+        onStatus: (val) {
+          print('Speech status: $val');
+          // Update listening state when status changes
+          setState(() {
+            _isListening = val == 'listening';
+          });
+        },
+        onError: (val) {
+          print('Speech error: $val');
+          // Stop listening on error
+          setState(() {
+            _isListening = false;
+          });
+        },
       );
       print('Speech enabled: $_speechEnabled');
     } catch (e) {
@@ -76,6 +92,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     setState(() {
       _lastWords = result.recognizedWords;
       _messageController.text = _lastWords;
+      
+      // Update listening status based on recognition state
+      if (result.finalResult) {
+        _isListening = false;
+      }
     });
   }
 
@@ -155,7 +176,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                           ),
                         ] else ...[
                           const Text(
-                            'Asisten Bahasa Jawa • Online',
+                            'Asisten Kamus',
                             style: TextStyle(
                               fontSize: 12, 
                               color: Colors.white,

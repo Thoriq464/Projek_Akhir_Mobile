@@ -39,11 +39,17 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
     ));
     _animationController.forward();
   }
-
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
+  }
+  // Method untuk mengecek apakah ada contoh kalimat
+  bool _hasExamples() {
+    return (widget.kosakata.contohKalimat != null && 
+            widget.kosakata.contohKalimat!.trim().isNotEmpty) ||
+           (widget.kosakata.contohKalimatIndonesia != null && 
+            widget.kosakata.contohKalimatIndonesia!.trim().isNotEmpty);
   }
 
   @override
@@ -62,9 +68,11 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
+                  position: _slideAnimation,                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: MediaQuery.of(context).size.width < 360 ? 16 : 20,
+                      vertical: 20,
+                    ),
                     child: Column(
                       children: [
                         // Hero Card dengan kata utama
@@ -74,10 +82,8 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
                         // Grid layout untuk informasi
                         _buildInfoGrid(),
                         const SizedBox(height: 24),
-                        
-                        // Contoh kalimat section
-                        if (widget.kosakata.contohKalimat != null || 
-                            widget.kosakata.contohKalimatIndonesia != null)
+                          // Contoh kalimat section - hanya tampil jika ada contoh
+                        if (_hasExamples())
                           _buildExampleSection(),
                         
                         const SizedBox(height: 24),
@@ -148,11 +154,13 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
       ),
     );
   }
-
   Widget _buildHeroCard() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(isSmallScreen ? 24 : 32),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -176,15 +184,18 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
         children: [
           // Javanese text dengan style yang menonjol
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: EdgeInsets.symmetric(
+              horizontal: isSmallScreen ? 16 : 24, 
+              vertical: isSmallScreen ? 8 : 12
+            ),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               widget.kosakata.kataJawa,
-              style: const TextStyle(
-                fontSize: 28,
+              style: TextStyle(
+                fontSize: isSmallScreen ? 24 : 28,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
                 letterSpacing: 1.2,
@@ -192,13 +203,13 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: isSmallScreen ? 16 : 20),
           
           // Indonesian translation
           Text(
             widget.kosakata.kataIndonesia,
-            style: const TextStyle(
-              fontSize: 20,
+            style: TextStyle(
+              fontSize: isSmallScreen ? 18 : 20,
               color: Colors.white,
               fontWeight: FontWeight.w500,
             ),
@@ -209,7 +220,6 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
       ),
     );
   }
-
   Widget _buildInfoGrid() {
     List<Widget> infoCards = [];
     
@@ -233,17 +243,36 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
       ));
     }
     
-    return GridView.count(
+    // Gunakan GridView.builder dengan height yang dinamis
+    return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 1.2,
-      children: infoCards,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: _calculateAspectRatio(),
+      ),
+      itemCount: infoCards.length,
+      itemBuilder: (context, index) => infoCards[index],
     );
   }
 
+  double _calculateAspectRatio() {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    
+    // Responsive aspect ratio berdasarkan ukuran layar
+    if (screenHeight < 600) {
+      return 1.0; // Untuk layar kecil
+    } else if (screenHeight < 700) {
+      return 1.1; // Untuk layar sedang
+    } else if (screenWidth < 380) {
+      return 0.9; // Untuk layar sempit
+    } else {
+      return 1.2; // Untuk layar besar
+    }
+  }
   Widget _buildInfoCard({
     required IconData icon,
     required String title,
@@ -252,7 +281,7 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -266,9 +295,10 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
@@ -276,35 +306,39 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
             child: Icon(
               icon,
               color: color,
-              size: 24,
+              size: 20,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
             title,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
               color: Colors.grey[700],
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           Text(
             subtitle,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 10,
               color: Colors.grey[500],
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 8),
-          Expanded(
+          const SizedBox(height: 6),
+          Flexible(
             child: Text(
               content,
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF2C3E50),
               ),
-              maxLines: 2,
+              maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -312,7 +346,6 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
       ),
     );
   }
-
   Widget _buildExampleSection() {
     return Container(
       width: double.infinity,
@@ -346,28 +379,32 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                'Contoh Penggunaan',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2C3E50),
+              const Expanded(
+                child: Text(
+                  'Contoh Penggunaan',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2C3E50),
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
           
-          // Contoh kalimat Jawa
-          if (widget.kosakata.contohKalimat != null && widget.kosakata.contohKalimat!.isNotEmpty)
+          // Contoh kalimat Jawa - hanya tampil jika ada dan tidak kosong
+          if (widget.kosakata.contohKalimat != null && 
+              widget.kosakata.contohKalimat!.trim().isNotEmpty)
             _buildExampleItem(
               label: 'Jawa',
               text: widget.kosakata.contohKalimat!,
               isJavanese: true,
             ),
           
-          // Contoh kalimat Indonesia
-          if (widget.kosakata.contohKalimatIndonesia != null && widget.kosakata.contohKalimatIndonesia!.isNotEmpty)
+          // Contoh kalimat Indonesia - hanya tampil jika ada dan tidak kosong
+          if (widget.kosakata.contohKalimatIndonesia != null && 
+              widget.kosakata.contohKalimatIndonesia!.trim().isNotEmpty)
             _buildExampleItem(
               label: 'Indonesia',
               text: widget.kosakata.contohKalimatIndonesia!,
@@ -456,44 +493,4 @@ class _DetailKosakataScreenState extends State<DetailKosakataScreen>
   //     ],
   //   );
   // }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

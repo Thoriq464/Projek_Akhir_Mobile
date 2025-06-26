@@ -14,14 +14,40 @@ class DaftarKosakataScreen extends StatefulWidget {
 class _DaftarKosakataScreenState extends State<DaftarKosakataScreen> {
   final ApiService apiService = ApiService();
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   String _searchKeyword = '';
   List<Kosakata> _daftarKosakata = [];
   List<Kosakata> _daftarKosakataTerfilter = [];
+  bool _showBackToTop = false;
 
   @override
   void initState() {
     super.initState();
     _loadKosakata();
+    _setupScrollListener();
+  }
+
+  void _setupScrollListener() {
+    _scrollController.addListener(() {
+      // Show back to top button when scrolled down more than 200 pixels
+      if (_scrollController.offset > 200 && !_showBackToTop) {
+        setState(() {
+          _showBackToTop = true;
+        });
+      } else if (_scrollController.offset <= 200 && _showBackToTop) {
+        setState(() {
+          _showBackToTop = false;
+        });
+      }
+    });
+  }
+
+  void _scrollToTop() {
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
   }
   Future<void> _loadKosakata() async {
     try {
@@ -247,12 +273,12 @@ class _DaftarKosakataScreenState extends State<DaftarKosakataScreen> {
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      body: CustomScrollView(        slivers: [          SliverAppBar(
+      body: CustomScrollView(
+        controller: _scrollController,slivers: [          SliverAppBar(
             expandedHeight: 220.0, // Dikurangi untuk mengurangi jarak
             floating: false,
             pinned: true,
@@ -529,34 +555,62 @@ class _DaftarKosakataScreenState extends State<DaftarKosakataScreen> {
                     ),
                   ),
                 ),
-              ];
-            }).expand((list) => list)),
+              ];            }).expand((list) => list)),
           const SliverToBoxAdapter(
             child: SizedBox(height: 100), // Space for FAB
           ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.pushNamed(context, '/chatbot');
-        },
-        backgroundColor: const Color(0xFF1565C0),
-        foregroundColor: Colors.white,
-        elevation: 8,
-        icon: const Icon(Icons.smart_toy_rounded),
-        label: const Text(
-          'Chatbot Jawa',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
+        ],      ),
+      floatingActionButton: Stack(
+        children: [
+          // Back to top button - positioned at bottom right, above chatbot
+          if (_showBackToTop)
+            Positioned(
+              bottom: 80, // Above the chatbot button
+              right: 16,
+              child: FloatingActionButton(
+                onPressed: _scrollToTop,
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF1565C0),
+                elevation: 4,
+                mini: true,
+                heroTag: "backToTop",
+                child: const Icon(
+                  Icons.keyboard_arrow_up_rounded,
+                  size: 28,
+                ),
+              ),
+            ),
+          
+          // Chatbot button - positioned at bottom right
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.pushNamed(context, '/chatbot');
+              },
+              backgroundColor: const Color(0xFF1565C0),
+              foregroundColor: Colors.white,
+              elevation: 8,
+              heroTag: "chatbot",
+              icon: const Icon(Icons.smart_toy_rounded),
+              label: const Text(
+                'Chatbot Jawa',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
-
   @override
   void dispose() {
+    _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 }
